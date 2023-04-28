@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 def square(i, j, size):
     square = []
@@ -16,7 +15,8 @@ def neighbours(i, j, width, size):
                 neighbours.append((x, y))
     return neighbours
 
-def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5):
+def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42):
+    np.random.seed(seed)
     images = np.empty((n_images, width, width))
     counts = np.empty((n_images), 'i')
     for idx_image in range(n_images):
