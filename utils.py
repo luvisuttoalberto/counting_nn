@@ -1,8 +1,12 @@
+import os.path
 import torch.optim
 
-from models import FCNN
-from torchvision import datasets, transforms
+from models import FCNN, LeNet
 from torch.utils.data import DataLoader
+from dataset import CountingDataset
+import numpy as np
+from utilities import generator
+from pathlib import Path
 
 
 def train(model, trainloader, validloader, n_epochs, optimizer, loss_fn, device):
@@ -58,11 +62,24 @@ def test(model, testloader, device):
 
 
 if __name__ == "__main__":
-    transform = transforms.Compose([transforms.ToTensor(),
-                                    transforms.Normalize((0.5,), (0.5,))])
 
-    # training data
-    trainset = datasets.MNIST('./data', download=True, train=True, transform=transform)
+    n_images = 50000
+    n_images_test = int(n_images * 0.2)
+
+    # train data
+    # Verify if you have saved dataset to be loaded; if not, generate it
+    Path("./data/train/images").mkdir(parents=True, exist_ok=True)
+    Path("./data/train/labels").mkdir(parents=True, exist_ok=True)
+    imagesPath = "data/train/images/%d.npy" % n_images
+    labelsPath = "data/train/labels/%d.npy" % n_images
+    if not os.path.isfile(imagesPath) or not os.path.isfile(labelsPath):
+        matrices, labels = generator(n_images)
+        np.save(imagesPath, matrices)
+        np.save(labelsPath, labels)
+    else:
+        matrices = np.load(imagesPath)
+        labels = np.load(labelsPath)
+    trainset = CountingDataset(matrices, labels)
     train_samples = int(len(trainset) * 0.8)
     valid_samples = len(trainset) - train_samples
     trainset, validset = torch.utils.data.random_split(trainset, [train_samples, valid_samples])
@@ -70,12 +87,24 @@ if __name__ == "__main__":
     valid_loader = DataLoader(validset, batch_size=64, shuffle=True)
 
     # test data
-    testset = datasets.MNIST('./data', download=True, train=False, transform=transform)
+    # Verify if you have saved dataset to be loaded; if not, generate it
+    Path("./data/test/images").mkdir(parents=True, exist_ok=True)
+    Path("./data/test/labels").mkdir(parents=True, exist_ok=True)
+    imagesPath = "data/test/images/%d.npy" % n_images_test
+    labelsPath = "data/test/labels/%d.npy" % n_images_test
+    if not os.path.isfile(imagesPath) or not os.path.isfile(labelsPath):
+        test_matrices, test_labels = generator(n_images=n_images_test, seed=14)
+        np.save(imagesPath, test_matrices)
+        np.save(labelsPath, test_labels)
+    else:
+        test_matrices = np.load(imagesPath)
+        test_labels = np.load(labelsPath)
+    testset = CountingDataset(test_matrices, test_labels)
     test_loader = DataLoader(testset, batch_size=64, shuffle=True)
 
-    n_epochs = 10
-    model = FCNN()
-    # model = LeNet()
+    n_epochs = 100
+    # model = FCNN()
+    model = LeNet()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     loss_fn = torch.nn.CrossEntropyLoss()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
