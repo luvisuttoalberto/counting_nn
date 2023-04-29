@@ -7,11 +7,15 @@ from dataset import CountingDataset
 import numpy as np
 from utilities import generator
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 
 def train(model, trainloader, validloader, n_epochs, optimizer, loss_fn, device):
     model.to(device)
+    train_losses = []
+    valid_losses = []
     for e in range(n_epochs):
+        epoch_train_loss = 0
         model.train()
         print('Epoch: ', e)
         for i, data in enumerate(trainloader):
@@ -25,9 +29,13 @@ def train(model, trainloader, validloader, n_epochs, optimizer, loss_fn, device)
             # print(loss)
             loss.backward()
             optimizer.step()
+            epoch_train_loss += loss.item()
 
-        if e % 10 == 0:
+        train_losses.append(epoch_train_loss / len(train_loader))
+
+        if e % 10 == 0 or e == n_epochs - 1:
             model.eval()
+            epoch_valid_loss = 0
             total = 0.0
             correct = 0.0
             with torch.no_grad():
@@ -35,11 +43,14 @@ def train(model, trainloader, validloader, n_epochs, optimizer, loss_fn, device)
                     v_input = v_input.to(device)
                     v_label = v_label.to(device)
                     pred = model(v_input)
+                    loss = loss_fn(pred, v_label)
+                    epoch_valid_loss += loss.item()
                     pred = torch.argmax(pred, dim=-1)
                     total += v_label.size(0)
                     correct += (pred == v_label).sum().item()
+                valid_losses.append(epoch_valid_loss / len(valid_loader))
                 print(f'Accuracy of the network on validation set: {100 * correct // total} %')
-
+    return train_losses, valid_losses
 
 def test(model, testloader, device):
     model.eval()
@@ -63,7 +74,7 @@ def test(model, testloader, device):
 
 if __name__ == "__main__":
 
-    n_images = 50000
+    n_images = 500
     n_images_test = int(n_images * 0.2)
 
     # train data
@@ -83,8 +94,8 @@ if __name__ == "__main__":
     train_samples = int(len(trainset) * 0.8)
     valid_samples = len(trainset) - train_samples
     trainset, validset = torch.utils.data.random_split(trainset, [train_samples, valid_samples])
-    train_loader = DataLoader(trainset, batch_size=64, shuffle=True)
-    valid_loader = DataLoader(validset, batch_size=64, shuffle=True)
+    train_loader = DataLoader(trainset, batch_size=256, shuffle=True)
+    valid_loader = DataLoader(validset, batch_size=256, shuffle=True)
 
     # test data
     # Verify if you have saved dataset to be loaded; if not, generate it
@@ -100,7 +111,7 @@ if __name__ == "__main__":
         test_matrices = np.load(imagesPath)
         test_labels = np.load(labelsPath)
     testset = CountingDataset(test_matrices, test_labels)
-    test_loader = DataLoader(testset, batch_size=64, shuffle=True)
+    test_loader = DataLoader(testset, batch_size=256, shuffle=True)
 
     n_epochs = 100
     # model = FCNN()
@@ -109,5 +120,14 @@ if __name__ == "__main__":
     loss_fn = torch.nn.CrossEntropyLoss()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    train(model, train_loader, valid_loader, n_epochs, optimizer, loss_fn, device)
+    train_loss, val_loss = train(model, train_loader, valid_loader, n_epochs, optimizer, loss_fn, device)
     test(model, test_loader, device)
+
+    plt.plot(range(1, n_epochs + 1), train_loss, label='Training loss')
+    x_for_val_plot = list(range(1, n_epochs + 1, 10))
+    x_for_val_plot.append(n_epochs)
+    plt.plot(x_for_val_plot, val_loss, label='Validation loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.show()
