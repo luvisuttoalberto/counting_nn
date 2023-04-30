@@ -18,7 +18,7 @@ def neighbours(i, j, width, size):
     return neighbours
 
 
-def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42, fixed_n=False, n=None, method='classic', scale=1):
+def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42, fixed_n=False, n=None, method='classic', scale=.1):
     np.random.seed(seed)
     images = np.empty((n_images, width, width))
     counts = np.empty(n_images, 'i')
@@ -41,12 +41,14 @@ def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42
                     restart = False
                 else:
                     i, j = np.random.randint(0, width - size + 1, 2)
-        if method == 'classic':
-            images[idx_image] = image
-        if method == 'gauss':
+        images[idx_image] = image
+    if method == 'gauss':
+        for idx_image in range(n_images):
             gauss_noise = np.random.normal(0, scale, (width, width))
-            images[idx_image] = image
-            # images[idx_image] = np.clip(image + gauss_noise, 0, 255)
+            images[idx_image] = np.clip(images[idx_image] + gauss_noise, 0, 255)
+    if method == 'inverted':
+        for idx_image in range(n_images):
+            images[idx_image] = 255*np.ones((width, width)) - images[idx_image]
     return images, counts
 
 
