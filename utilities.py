@@ -17,6 +17,40 @@ def neighbours(i, j, width, size):
                 neighbours.append((x, y))
     return neighbours
 
+def cross(i, j, size):
+    cross = []
+    if size == 3:
+        cross.append((i, j + 1))
+        cross.append((i + 1, j))
+        cross.append((i + 1, j + 2))
+        cross.append((i + 2, j + 1))
+    if size == 4:
+        cross.append((i, j + 1))
+        cross.append((i, j + 2))
+        cross.append((i + 1, j))
+        cross.append((i + 1, j + 3))
+        cross.append((i + 2, j))
+        cross.append((i + 2, j + 3))
+        cross.append((i + 3, j + 1))
+        cross.append((i + 3, j + 2))
+    if size == 5:
+        cross.append((i, j + 1))
+        cross.append((i, j + 2))
+        cross.append((i, j + 3))
+        cross.append((i + 1, j))
+        cross.append((i + 1, j + 2))
+        cross.append((i + 1, j + 4))
+        cross.append((i + 2, j))
+        cross.append((i + 2, j + 1))
+        cross.append((i + 2, j + 3))
+        cross.append((i + 2, j + 4))
+        cross.append((i + 3, j))
+        cross.append((i + 3, j + 2))
+        cross.append((i + 3, j + 4))
+        cross.append((i + 4, j + 1))
+        cross.append((i + 4, j + 2))
+        cross.append((i + 4, j + 3))
+    return cross
 
 def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42, fixed_n=False, n=None, method='classic', scale=30):
     np.random.seed(seed)
@@ -38,6 +72,10 @@ def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42
                 if np.any(image[tuple(zip(*square(i, j, size)))]) == False \
                         and np.any(image[tuple(zip(*neighbours(i, j, width, size)))]) == False:
                     image[tuple(zip(*square(i, j, size)))] = 255
+                    if method == 'classic':
+                        pass
+                    if method == 'cross':
+                        image[tuple(zip(*cross(i, j, size)))] = 0
                     restart = False
                 else:
                     i, j = np.random.randint(0, width - size + 1, 2)
@@ -50,5 +88,4 @@ def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42
         for idx_image in range(n_images):
             images[idx_image] = 255*np.ones((width, width)) - images[idx_image]
     return images, counts
-
 
