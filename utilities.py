@@ -18,7 +18,7 @@ def neighbours(i, j, width, size):
     return neighbours
 
 
-def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42, fixed_n=False, n=None, method='classic', scale=.1):
+def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42, fixed_n=False, n=None, method='classic', scale=30):
     np.random.seed(seed)
     images = np.empty((n_images, width, width))
     counts = np.empty(n_images, 'i')
@@ -37,7 +37,7 @@ def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42
             while restart:
                 if np.any(image[tuple(zip(*square(i, j, size)))]) == False \
                         and np.any(image[tuple(zip(*neighbours(i, j, width, size)))]) == False:
-                    image[tuple(zip(*square(i, j, size)))] = 1
+                    image[tuple(zip(*square(i, j, size)))] = 255
                     restart = False
                 else:
                     i, j = np.random.randint(0, width - size + 1, 2)
