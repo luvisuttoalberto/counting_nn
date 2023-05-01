@@ -1,4 +1,6 @@
 import os.path
+
+import numpy
 import torch.optim
 
 from models import FCNN, LeNet
@@ -26,16 +28,24 @@ def train(model, trainloader, validloader, n_epochs, optimizer, loss_fn, device)
             optimizer.zero_grad()
             output = model(input)
             loss = loss_fn(output, label)
-            # print(loss)
             loss.backward()
             optimizer.step()
             epoch_train_loss += loss.item()
 
         train_losses.append(epoch_train_loss / len(train_loader))
 
-        if e % 10 == 0 or e == n_epochs - 1:
-            model.eval()
-            epoch_valid_loss = 0
+        model.eval()
+        epoch_valid_loss = 0
+        with torch.no_grad():
+            for idx, (v_input, v_label) in enumerate(validloader):
+                v_input = v_input.to(device)
+                v_label = v_label.to(device)
+                pred = model(v_input)
+                loss = loss_fn(pred, v_label)
+                epoch_valid_loss += loss.item()
+            valid_losses.append(epoch_valid_loss / len(valid_loader))
+
+        if e % 10 == 0:
             total = 0.0
             correct = 0.0
             with torch.no_grad():
@@ -43,12 +53,9 @@ def train(model, trainloader, validloader, n_epochs, optimizer, loss_fn, device)
                     v_input = v_input.to(device)
                     v_label = v_label.to(device)
                     pred = model(v_input)
-                    loss = loss_fn(pred, v_label)
-                    epoch_valid_loss += loss.item()
                     pred = torch.argmax(pred, dim=-1)
                     total += v_label.size(0)
                     correct += (pred == v_label).sum().item()
-                valid_losses.append(epoch_valid_loss / len(valid_loader))
                 print(f'Accuracy of the network on validation set: {100 * correct // total} %')
     return train_losses, valid_losses
 
@@ -74,7 +81,7 @@ def test(model, testloader, device):
 
 if __name__ == "__main__":
 
-    n_images = 500
+    n_images = 50000
     n_images_test = int(n_images * 0.2)
 
     # train data
@@ -90,7 +97,7 @@ if __name__ == "__main__":
     else:
         matrices = np.load(imagesPath)
         labels = np.load(labelsPath)
-    trainset = CountingDataset(matrices, labels)
+    trainset = CountingDataset(matrices/255., labels)
     train_samples = int(len(trainset) * 0.8)
     valid_samples = len(trainset) - train_samples
     trainset, validset = torch.utils.data.random_split(trainset, [train_samples, valid_samples])
@@ -110,23 +117,23 @@ if __name__ == "__main__":
     else:
         test_matrices = np.load(imagesPath)
         test_labels = np.load(labelsPath)
-    testset = CountingDataset(test_matrices, test_labels)
+    testset = CountingDataset(test_matrices/255., test_labels)
     test_loader = DataLoader(testset, batch_size=256, shuffle=True)
 
-    n_epochs = 100
-    # model = FCNN()
-    model = LeNet()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    n_epochs = 50
+    model = FCNN()
+    # model = LeNet()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
     loss_fn = torch.nn.CrossEntropyLoss()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     train_loss, val_loss = train(model, train_loader, valid_loader, n_epochs, optimizer, loss_fn, device)
     test(model, test_loader, device)
-
+    torch.save(model.state_dict(), 'models/fcnn_2048_wd_leakyRelu.pt')
+    np.save("./losses/fcnn_2048_wd_leakyRelu_train.npy", train_loss)
+    np.save("./losses/fcnn_2048_wd_leakyRelu_val.npy", val_loss)
     plt.plot(range(1, n_epochs + 1), train_loss, label='Training loss')
-    x_for_val_plot = list(range(1, n_epochs + 1, 10))
-    x_for_val_plot.append(n_epochs)
-    plt.plot(x_for_val_plot, val_loss, label='Validation loss')
+    plt.plot(range(1, n_epochs + 1), val_loss, label='Validation loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
