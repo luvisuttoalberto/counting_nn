@@ -61,7 +61,7 @@ if __name__ == "__main__":
     model.load_state_dict(saved_state_dict)
 
     accuracy = test(model, test_loader, device='cpu')
-    Path("./accuracy/%s/%s.npy" % (method, model_name)).mkdir(parents=True, exist_ok=True)
+    Path("./accuracy/%s" % method).mkdir(parents=True, exist_ok=True)
     np.save("./accuracy/%s/%s.npy" % (method, model_name), accuracy)
 
 
