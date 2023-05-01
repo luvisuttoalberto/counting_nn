@@ -110,65 +110,60 @@ plt.show()
 
 ##################################### ACCURACY FOR EACH CLASS
 
+# Plots for evety number
 # names = []
 # results = []
 # for f in os.listdir('./models/'):
 #     if f == '.ipynb_checkpoints':
 #         print('Trovato il figlio di puttana')
 #         continue
-#     names.append(f)
-#     if f.startswith('fcnn'):
-#         if '128' in f:
-#             if 'tanh' in f:
-#                 model = FCNNt(128)
-#             else:
-#                 model = FCNN(128)
-#         elif '256' in f:
-#             if 'tanh' in f:
-#                 model = FCNNt(256)
-#             else:
-#                 model = FCNN(256)
-#         elif '512' in f:
-#             if 'tanh' in f:
-#                 model = FCNNt(512)
-#             else:
-#                 model = FCNN(512)
-#         elif '1024' in f:
-#             if 'tanh' in f:
-#                 model = FCNNt(1024)
-#             else:
-#                 model = FCNN(1024)
-#         elif '2048' in f:
-#             if 'tanh' in f:
-#                 model = FCNNt(2048)
-#             else:
-#                 model = FCNN(2048)
-#         elif '4096' in f:
-#             if 'tanh' in f:
-#                 model = FCNNt(4096)
-#             else:
-#                 model = FCNN(4096)
-#     else:
-#         if 'tanh' in f:
-#             model = LeNett()
-#         elif 'relu' in f:
-#             model = LeNet()
-#         else:
-#             model = LeNetl()
-#     res = []
-#     for i in range(1, 11):
-#         model.load_state_dict(torch.load('./models/' + f))
-#         model.to(device)
-#         test_matrices, test_labels = generator(n_images=1000, seed=11, fixed_n=True, n=i)
-#         testset = CountingDataset(test_matrices, test_labels)
-#         test_loader = DataLoader(testset, batch_size=256, shuffle=True)
-#         res.append(test(model, test_loader, device))
-#     results.append(res)
-#
-# for i in range(len(results)):
-#     plt.plot(list(range(1, 11)), results[i], label=names[i].removesuffix('.pt'))
-# plt.xlabel('Epoch')
-# plt.ylabel('Accuracy')
-# plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
-# plt.title('Accuracy on different labels')
-# plt.show()
+
+    # if f.startswith('fcnn'):
+    #     if '128' in f:
+    #         if 'relu' in f:
+    #             model = FCNNt(128)
+    #             names.append(f)
+    #         else:
+    #             continue
+    #     elif '256' in f:
+    #         if 'relu' in f:
+    #             model = FCNNt(256)
+    #             names.append(f)
+    #         else:
+    #             continue
+    #     elif '512' in f:
+    #         if 'relu' in f:
+    #             model = FCNNt(512)
+    #             names.append(f)
+    #         else:
+    #             continue
+    #     elif '1024' in f:
+    #         if 'relu' in f:
+    #             model = FCNNt(1024)
+    #             names.append(f)
+    #         else:
+    #             continue
+    #     elif '2048' in f:
+    #         if 'relu' in f:
+    #             model = FCNNt(2048)
+    #             names.append(f)
+    #         else:
+    #             continue
+    #     elif '4096' in f:
+    #         if 'relu' in f:
+    #             model = FCNNt(4096)
+    #             names.append(f)
+    #         else:
+    #             continue
+    #
+    # else:
+    #     continue
+    # res = []
+    # for i in range(1, 11):
+    #     model.load_state_dict(torch.load('./models/' + f))
+    #     model.to(device)
+    #     test_matrices, test_labels = generator(n_images=1000, seed=11, fixed_n=True, n=i)
+    #     testset = CountingDataset(test_matrices, test_labels)
+    #     test_loader = DataLoader(testset, batch_size=256, shuffle=True)
+    #     res.append(test(model, test_loader, device))
+    # results.append(res)
