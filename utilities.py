@@ -87,5 +87,8 @@ def generator(n_images=1000, width=28, n_max=10, size_min=3, size_max=5, seed=42
     if method == 'inverted':
         for idx_image in range(n_images):
             images[idx_image] = 255*np.ones((width, width)) - images[idx_image]
+    if method == 'luminosity':
+        for idx_image in range(n_images):
+            images[idx_image] = images[idx_image]*0.85
     return images, counts
 

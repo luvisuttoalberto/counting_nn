@@ -38,6 +38,8 @@ if __name__ == "__main__":
     # method = "cross"
     # method = "gauss"
     # method = "inverted"
+    # method = "luminosity"
+
     Path("./data/test/%s_images" % method).mkdir(parents=True, exist_ok=True)
     Path("./data/test/%s_labels" % method).mkdir(parents=True, exist_ok=True)
     imagesPath = "data/test/%s_images/%d.npy" % (method, n_images_test)
@@ -50,13 +52,13 @@ if __name__ == "__main__":
         test_matrices = np.load(imagesPath)
         test_labels = np.load(labelsPath)
 
-    print("Loaded images; start testing")
+    print("Confusion factor: ", method)
     testset = CountingDataset(test_matrices/255., test_labels)
     test_loader = DataLoader(testset, batch_size=256, shuffle=True)
 
-    model = FCNN()
-    # model = LeNet()
-    model_name = "fcnn_4096_wd_tanh"
+    # model = FCNN()
+    model = LeNet()
+    model_name = "lenet_tanh"
     saved_state_dict = torch.load("./models/%s.pt" % model_name)
     model.load_state_dict(saved_state_dict)
 
