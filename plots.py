@@ -167,3 +167,11 @@ plt.show()
     #     test_loader = DataLoader(testset, batch_size=256, shuffle=True)
     #     res.append(test(model, test_loader, device))
     # results.append(res)
+
+# for i in range(len(results)):
+#     plt.plot(list(range(1, 11)), results[i], label=names[i].removesuffix('.pt'))
+# plt.xlabel('Epoch')
+# plt.ylabel('Accuracy')
+# plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+# plt.title('Accuracy on different labels - ReLU')
+# plt.show()
